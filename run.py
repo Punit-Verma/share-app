@@ -1,11 +1,13 @@
 #! /usr/bin/python3.8
 
 import os
+import main
 import zipfile
+import threading
 from tkinter import *
 from tkinterdnd2 import *
 from tkinter import ttk
-import main
+
 
 class ShareApp(Frame):
     def __init__(self, master):
@@ -26,7 +28,12 @@ class ShareApp(Frame):
         self.drop_frame.pack(expand=True, fill=BOTH)
 
         self.drop_frame.drop_target_register(DND_FILES)
-        self.drop_frame.dnd_bind("<<Drop>>", self.set_selected_resource)
+        self.drop_frame.dnd_bind(
+            "<<Drop>>",
+            lambda x: threading.Thread(
+                target=self.set_selected_resource, args=(x,)
+            ).start(),
+        )
 
         self.resource_label = ttk.Label(
             self.drop_frame,
@@ -109,7 +116,6 @@ class ShareApp(Frame):
         self.is_server_started = True
         # logic to start the server
         main.start_server()
-
 
     def toggle_auto_zip(self):
         self.auto_zip = bool(self.auto_zip_var.get())
