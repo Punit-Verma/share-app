@@ -2,20 +2,19 @@ import os
 import zipfile
 from tkinter import *
 from tkinterdnd2 import *
-from tkinter import filedialog
 from tkinter import ttk
 
 
-class DragDropWindow(Frame):
+class ShareApp(Frame):
     def __init__(self, master):
         super().__init__(master)
 
         # theme
         self.tk.call("source", "theme/forest-dark.tcl")
-        # self.tk.call("source", "theme/forest-light.tcl")
         ttk.Style().theme_use("forest-dark")
 
         self.resource = None
+        self.is_server_started = False
 
         self.master = master
         self.master.title("Share")
@@ -71,45 +70,40 @@ class DragDropWindow(Frame):
     def set_selected_resource(self, event):
         file_or_folder = event.data
         self.resource = file_or_folder
-        self.resource_label.config(text=file_or_folder.split("/")[-1])
+        self.resource_label.config(text=os.path.basename(file_or_folder))
         self.text_entry.delete(0, END)
         self.text_entry.insert(0, file_or_folder)
-        if os.path.isfile(file_or_folder):
-            self.isDir = False
-        elif os.path.isdir(file_or_folder):
-            self.isDir = True
+        self.isDir = os.path.isdir(file_or_folder)
         # if it's a dir and auto_zip is enabled, zip it
         if self.isDir and self.auto_zip:
             # disable the share button
             self.share_button.config(state="disabled")
             self.logContent(text="Auto zipping...")
             self.resource = self.resource + ".zip"
-            self.resource_label.config(text=self.resource.split("/")[-1])
+            self.resource_label.config(text=os.path.basename(self.resource))
             self.text_entry.delete(0, END)
             self.text_entry.insert(0, self.resource)
             op_zip_filename = self.zip_folder(file_or_folder, self.resource)
             self.share_button.config(state="normal")
             self.logContent(text="Auto zipped! " + op_zip_filename)
+        # logic to set the resource to the server
+        # self.resource is the path to the file or folder
 
     def handle_share_button(self):
+        if self.is_server_started:
+            self.share_button.config(text="Share")
+            # logic to stop the server
+            self.is_server_started = False
+            return
         if self.resource is None:
             print("No resource selected!")
             self.logContent(text="No resource selected!", type="error")
             return
         print("Sharing:", self.resource)
         self.logContent(text="Sharing: " + self.resource)
-
-    def share(self):
-        file_or_folder = self.resource_label["text"]
-        if os.path.exists(file_or_folder):
-            self.resource_label.config(state="normal")  # Disable the button
-            self.isDir = os.path.isdir(file_or_folder)
-            print("Sharing:", file_or_folder)
-            print("Is Directory:", self.isDir)
-            print("Auto Zip:", self.auto_zip)
-        else:
-            self.resource_label.config(state="disabled")  # Disable the button
-            print("File or folder does not exist!")
+        self.share_button.config(text="Stop Sharing")
+        self.is_server_started = True
+        # logic to start the server
 
     def toggle_auto_zip(self):
         self.auto_zip = bool(self.auto_zip_var.get())
@@ -130,5 +124,5 @@ class DragDropWindow(Frame):
 
 
 root = TkinterDnD.Tk()
-drag_drop_window = DragDropWindow(root)
+drag_drop_window = ShareApp(root)
 root.mainloop()
