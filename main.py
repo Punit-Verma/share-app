@@ -1,134 +1,53 @@
-import os
-import zipfile
-from tkinter import *
-from tkinterdnd2 import *
-from tkinter import filedialog
-from tkinter import ttk
+#! /usr/bin/python3.8
 
+import sys
+import time
+import server
+import socket
+import file_info
+from threading import Thread
+from multiprocessing import Process
 
-class DragDropWindow(Frame):
-    def __init__(self, master):
-        super().__init__(master)
+proc = None
 
-        # theme
-        self.tk.call("source", "theme/forest-dark.tcl")
-        # self.tk.call("source", "theme/forest-light.tcl")
-        ttk.Style().theme_use("forest-dark")
+def log(content,verbose=True):
+    if verbose:
+        print(content)
+    with open(file_info.BASE_PATH+'/log.txt','a') as f:
+        f.write(content+'\n')
 
-        self.resource = None
+# Set the file to be served
+def set_file(file_path):
+    file_info.set(file_path)
+    log(f'File set: {file_path}')
 
-        self.master = master
-        self.master.title("Share")
-        self.master.geometry("450x300")
+# Start the server
+def start_server():
+    global proc
+    proc = Process(target=server.serve_file)
+    proc.start()
+    hostname=socket.gethostname()   
+    ip=socket.gethostbyname(hostname)
+    return f"{ip}:8080"
 
-        self.drop_frame = ttk.Frame(self.master)
-        self.drop_frame.pack(expand=True, fill=BOTH)
+# Stop the server
+def stop_server():
+    if proc.is_alive():
+        proc.terminate()
+    log('Server stopped')
 
-        self.drop_frame.drop_target_register(DND_FILES)
-        self.drop_frame.dnd_bind("<<Drop>>", self.set_selected_resource)
+## DEBUGGING ##
+def delay_stop():
+    time.sleep(5)
+    set_file(sys.argv[0])
 
-        self.resource_label = ttk.Label(
-            self.drop_frame,
-            text="Drop a File or Dir",
-            font=("Helvetica", 20),
-        )
-        self.resource_label.pack(expand=True)
-
-        # log frame
-        self.log_frame = ttk.Frame(self.master)
-        self.log_frame.pack(side=BOTTOM, fill=X, padx=10, pady=5)
-
-        self.log = ttk.Label(self.log_frame, text="Gui loaded")
-        self.log.pack(side=BOTTOM, fill="both", expand=True)
-
-        self.bottom_frame = ttk.Frame(self.master)
-        self.bottom_frame.pack(side=BOTTOM, fill=X, padx=10, pady=10)
-
-        self.text_entry = ttk.Entry(self.bottom_frame)
-        self.text_entry.pack(side=LEFT, fill="both", expand=True, padx=(0, 10))
-
-        self.share_button = ttk.Button(
-            self.bottom_frame,
-            style="Accent.TButton",
-            text="Share",
-            command=self.handle_share_button,
-        )
-        self.share_button.pack(side=RIGHT)
-
-        self.auto_zip = False
-        self.auto_zip_var = IntVar()
-        self.auto_zip_checkbutton = ttk.Checkbutton(
-            self.bottom_frame,
-            text="Auto Zip",
-            style="Switch",
-            variable=self.auto_zip_var,
-            command=self.toggle_auto_zip,
-        )
-        self.auto_zip_checkbutton.pack(side=RIGHT, padx=(0, 10))
-
-        self.isDir = False
-
-    def set_selected_resource(self, event):
-        file_or_folder = event.data
-        self.resource = file_or_folder
-        self.resource_label.config(text=file_or_folder.split("/")[-1])
-        self.text_entry.delete(0, END)
-        self.text_entry.insert(0, file_or_folder)
-        if os.path.isfile(file_or_folder):
-            self.isDir = False
-        elif os.path.isdir(file_or_folder):
-            self.isDir = True
-        # if it's a dir and auto_zip is enabled, zip it
-        if self.isDir and self.auto_zip:
-            # disable the share button
-            self.share_button.config(state="disabled")
-            self.logContent(text="Auto zipping...")
-            self.resource = self.resource + ".zip"
-            self.resource_label.config(text=self.resource.split("/")[-1])
-            self.text_entry.delete(0, END)
-            self.text_entry.insert(0, self.resource)
-            op_zip_filename = self.zip_folder(file_or_folder, self.resource)
-            self.share_button.config(state="normal")
-            self.logContent(text="Auto zipped! " + op_zip_filename)
-
-    def handle_share_button(self):
-        if self.resource is None:
-            print("No resource selected!")
-            self.logContent(text="No resource selected!", type="error")
-            return
-        print("Sharing:", self.resource)
-        self.logContent(text="Sharing: " + self.resource)
-
-    def share(self):
-        file_or_folder = self.resource_label["text"]
-        if os.path.exists(file_or_folder):
-            self.resource_label.config(state="normal")  # Disable the button
-            self.isDir = os.path.isdir(file_or_folder)
-            print("Sharing:", file_or_folder)
-            print("Is Directory:", self.isDir)
-            print("Auto Zip:", self.auto_zip)
-        else:
-            self.resource_label.config(state="disabled")  # Disable the button
-            print("File or folder does not exist!")
-
-    def toggle_auto_zip(self):
-        self.auto_zip = bool(self.auto_zip_var.get())
-        print("Auto Zip:", self.auto_zip)
-
-    def zip_folder(self, folder_path, output_path):
-        with zipfile.ZipFile(output_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            for root, dirs, files in os.walk(folder_path):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    arcname = os.path.relpath(file_path, folder_path)
-                    zipf.write(file_path, arcname)
-
-        return output_path
-
-    def logContent(self, text, type="info"):
-        self.log.config(text=text, foreground="green" if type == "info" else "red")
-
-
-root = TkinterDnD.Tk()
-drag_drop_window = DragDropWindow(root)
-root.mainloop()
+if __name__=='__main__':
+    if len(sys.argv) > 1:
+        file = sys.argv[1]
+        set_file(file)
+        Thread(target=delay_stop).start()
+        start_server()
+    else :
+        log('No file given\n\tSyntax: command file_path')
+    
+        

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            @import url("https://fonts.googleapis.com/css2?family=Indie+Flower&family=Oldenburg&display=swap");
+            body {
+                background-color: #222;
+                color: #fff;
+                font-family: "Oldenburg", cursive;
+                font-weight: bolder;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+            }
+
+            .container {
+                text-align: center;
+            }
+            .file_card{
+                display: flex;
+                background-color: black;
+                min-width: 500px;
+                width:auto;
+                padding:25px;
+                border-radius: 20px;
+                flex-direction: column;
+            }
+            .file_name {
+                flex:1;
+                font-size: 32px;
+                margin-bottom: 20px;
+            }
+
+            .button {
+                display: inline-block;
+                padding: 10px 30px;
+                background-color: #5d5fef;
+                color: #fff;
+                font-size: 18px;
+                font-weight: bold;
+                text-decoration: none;
+                border-radius: 8px;
+                transition: background-color 0.3s;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            }
+
+            .button:hover {
+                /* background-color: #4f4fef; */
+                background-color: white;
+                color: black;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            {% for i in data %}
+            <div class ='file_card' >
+                <p class="file_name">{{i.name}}</p>
+                <p class="file_size">{{i.size}}</p>
+                <a href="/get-file?path={{i.path}}" class="button">Download</a>
+            </div>
+            {% endfor %}
+        </div>
+    </body>
+</html>
