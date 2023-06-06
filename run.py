@@ -90,6 +90,7 @@ class ShareApp(Frame):
             self.logContent(text="Auto zipped! " + op_zip_filename)
         # logic to set the resource to the server
         # self.resource is the path to the file or folder
+        main.set_file(self.resource)
 
     def handle_share_button(self):
         if self.is_server_started:
@@ -107,7 +108,6 @@ class ShareApp(Frame):
         self.share_button.config(text="Stop Sharing")
         self.is_server_started = True
         # logic to start the server
-        main.set_file(self.resource)
         main.start_server()
 
 
