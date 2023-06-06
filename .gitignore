@@ -2,3 +2,4 @@ share
 assets
 log.txt
 data.bin
+__pycache__/

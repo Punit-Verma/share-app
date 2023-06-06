@@ -20,7 +20,7 @@ class ShareApp(Frame):
 
         self.master = master
         self.master.title("Share")
-        self.master.geometry("450x300")
+        self.master.geometry("470x300")
 
         self.drop_frame = ttk.Frame(self.master)
         self.drop_frame.pack(expand=True, fill=BOTH)
