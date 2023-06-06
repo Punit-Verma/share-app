@@ -59,7 +59,7 @@
             {% for i in data %}
             <div class ='file_card' >
                 <p class="file_name">{{i.name}}</p>
-                <p class="file_size">{{i.size}}</p>
+                <p class="file_size">{{i.size[0]}}{{i.size[1]}}</p>
                 <a href="/get-file?path={{i.path}}" class="button">Download</a>
             </div>
             {% endfor %}

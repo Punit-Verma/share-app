@@ -1,9 +1,11 @@
+#! /usr/bin/python3.8
+
 import os
 import zipfile
 from tkinter import *
 from tkinterdnd2 import *
 from tkinter import ttk
-
+import main
 
 class ShareApp(Frame):
     def __init__(self, master):
@@ -93,6 +95,7 @@ class ShareApp(Frame):
         if self.is_server_started:
             self.share_button.config(text="Share")
             # logic to stop the server
+            main.stop_server()
             self.is_server_started = False
             return
         if self.resource is None:
@@ -104,6 +107,9 @@ class ShareApp(Frame):
         self.share_button.config(text="Stop Sharing")
         self.is_server_started = True
         # logic to start the server
+        main.set_file(self.resource)
+        main.start_server()
+
 
     def toggle_auto_zip(self):
         self.auto_zip = bool(self.auto_zip_var.get())

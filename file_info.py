@@ -26,7 +26,7 @@ def get(default=False):
                 {
                     "path": os.path.join(file_path, i),
                     "name": i,
-                    "size": os.path.getsize(os.path.join(file_path, i))
+                    "size": size(file_path=os.path.join(file_path, i))
                 }
                 for i in os.listdir(file_path)
             ]
@@ -35,7 +35,7 @@ def get(default=False):
                 {
                     "path": file_path,
                     "name": os.path.basename(file_path),
-                    "size": os.path.getsize(file_path)
+                    "size": size(os.path.getsize(file_path))
                 }
             ]
         return data
