@@ -35,7 +35,7 @@ def get(default=False):
                 {
                     "path": file_path,
                     "name": os.path.basename(file_path),
-                    "size": size(os.path.getsize(file_path))
+                    "size": size(file_path)
                 }
             ]
         return data
@@ -44,6 +44,7 @@ def get(default=False):
 
 def size(file_path):
     size = 0
+    print(file_path)
     if os.path.exists(file_path):
         size = os.path.getsize(file_path)
     if size <= 0:
